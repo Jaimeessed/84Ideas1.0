@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="my-4">Contact</h1>
+<p>Neem contact op met <strong>84Ideas</strong>:</p>
+<ul>
+    <li>Adres: Sarphatistraat 141C, 1018 GD Amsterdam</li>
+    <li>E-mail: <a href="mailto:info@84ideas.cloud">info@84ideas.cloud</a></li>
+    <li>Telefoon: +31 (0)20 123 4567</li>
+</ul>
+<form method="post" action="/contact" class="mt-4">
+    <div class="mb-3">
+        <label class="form-label">Naam:</label>
+        <input type="text" name="name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Bericht:</label>
+        <textarea name="message" class="form-control" rows="5" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Verstuur</button>
+</form>
+{% endblock %}

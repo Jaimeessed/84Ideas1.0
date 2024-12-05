@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Verifieer OTP</h1>
+<p>Voer de ontvangen code in:</p>
+<form method="POST">
+    <div class="mb-3">
+        <label for="otp">OTP:</label>
+        <input type="text" name="otp" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Verifieer</button>
+</form>
+
+{% endblock %}

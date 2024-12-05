@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Beheer Gebruikersrollen</h1>
+
+<form method="POST">
+    <div class="mb-3">
+        <label for="user_id">Selecteer Gebruiker:</label>
+        <select name="user_id" class="form-select" required>
+            {% for user in users %}
+            <option value="{{ user['id'] }}">{{ user['username'] }} ({{ user['role'] }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="new_role">Nieuwe Rol:</label>
+        <select name="new_role" class="form-select" required>
+            <option value="client">Client</option>
+            <option value="therapist">Therapist</option>
+            <option value="admin">Admin</option>
+            <option value="superadmin">Superadmin</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Rol Bijwerken</button>
+</form>
+{% endblock %}

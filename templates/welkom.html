@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Welkom, {{ session.get('username', 'gebruiker') }}!</h1>
+    <p class="text-center mt-4">We zijn blij dat je deel uitmaakt van 84Ideas. Hier kun je meer informatie vinden, contact opnemen of gebruik maken van onze diensten.</p>
+
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Dashboard</h5>
+                    <p class="card-text">Bekijk je persoonlijke gegevens en voortgang.</p>
+                    <a href="/client" class="btn btn-primary">Naar Client Dashboard</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Contact</h5>
+                    <p class="card-text">Heb je vragen? Neem contact met ons op via:</p>
+                    <a href="/contact" class="btn btn-primary">Contact opnemen</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Ask84</h5>
+                    <p class="card-text">Gebruik onze AI-assistent om vragen te stellen.</p>
+                    <a href="/ask84" class="btn btn-primary">Vraag aan AI</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

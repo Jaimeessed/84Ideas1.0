@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <!-- Slimme knop "84Ideas" -->
+            <a class="navbar-brand" href="{% if session.get('user_id') %}/dashboards{% else %}/home{% endif %}">
+                84Ideas
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    {% if not session.get('user_id') %}
+                        <!-- Tabs voor niet-ingelogde gebruikers -->
+                        <li class="nav-item"><a class="nav-link" href="/ask84">Ask84</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
+                    {% else %}
+                        <!-- Tabs voor ingelogde gebruikers -->
+                        {% if session.get('role') == 'client' %}
+                            <!-- Alleen zichtbaar voor clients -->
+                            <li class="nav-item"><a class="nav-link" href="/welkom">Welkom</a></li>
+                        {% else %}
+                            <!-- Tabs voor admins, superadmins, en therapists -->
+                            <li class="nav-item"><a class="nav-link" href="/dashboards">Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/agenda">Agenda</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/videocall">VideoCall</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/clienten">Cliënten</a></li>
+                        {% endif %}
+                        <li class="nav-item"><a class="nav-link" href="/ask84">Ask84</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+
+                        {% if session.get('role') in ['admin', 'superadmin'] %}
+                            <!-- Alleen zichtbaar voor admins en superadmins -->
+                            <li class="nav-item"><a class="nav-link" href="/admin">Admin Module</a></li>
+                        {% endif %}
+
+                        {% if session.get('role') == 'superadmin' %}
+                            <!-- Alleen zichtbaar voor superadmins -->
+                            <li class="nav-item"><a class="nav-link" href="/role-management">Beheersmodule</a></li>
+                        {% endif %}
+
+                        <!-- Logout knop -->
+                        <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash-meldingen -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="container mt-4">
+        {% block content %}
+        {% endblock %}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

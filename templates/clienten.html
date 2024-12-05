@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Cliënten Overzicht</h1>
+    {% if clients %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Naam</th>
+                    <th>Email</th>
+                    <th>Telefoon</th>
+                    <th>Aangemaakt op</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients %}
+                <tr>
+                    <td>{{ client['id'] }}</td>
+                    <td>{{ client['name'] }}</td>
+                    <td>{{ client['email'] }}</td>
+                    <td>{{ client['phone'] }}</td>
+                    <td>{{ client['created_at'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Er zijn momenteel geen cliënten om weer te geven.</p>
+    {% endif %}
+</div>
+{% endblock %}
