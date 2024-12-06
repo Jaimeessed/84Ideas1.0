@@ -1,14 +1,26 @@
 from flask import Flask, render_template, request, session, redirect, url_for, flash
-import random
 from datetime import datetime, timedelta
 import openai
-import mysql.connector
 from functools import wraps
 from dotenv import load_dotenv
 import os
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Laad .env-variabelen
+# Laad de .env-variabelen
 load_dotenv()
+
+# Haal de databasegegevens op
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_HOST = os.getenv("DB_HOST")
+DB_NAME = os.getenv("DB_NAME")
+
+# Maak de DATABASE_URL
+DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+
+# Debug: print de DATABASE_URL
+print("DEBUG - DATABASE_URL:", DATABASE_URL)
 
 # Flask-app instellen
 app = Flask(__name__)
@@ -16,6 +28,31 @@ app = Flask(__name__)
 # Configuratie van environment variables
 app.secret_key = os.getenv("SECRET_KEY")
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# Maak de engine en sessie
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Declarative Base voor het definiëren van tabellen
+Base = declarative_base()
+
+# Definieer modellen
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(50), unique=True, nullable=False)
+    email = Column(String(100), unique=True, nullable=False)
+    password = Column(String(100), nullable=False)
+    role = Column(String(20), nullable=False)
+
+class Client(Base):
+    __tablename__ = "clients"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    contact = Column(String(50), nullable=False)
+
+# Initialiseer de database (tabellen maken)
+Base.metadata.create_all(bind=engine)
 
 # Logincontrole-decorator
 def login_required(func):
@@ -26,24 +63,6 @@ def login_required(func):
             return redirect(url_for('login'))
         return func(*args, **kwargs)
     return wrapper
-
-# MySQL-configuratie
-db_config = {
-    'user': os.getenv("DB_USER"),
-    'password': os.getenv("DB_PASSWORD"),
-    'host': os.getenv("DB_HOST"),
-    'database': os.getenv("DB_NAME")
-}
-
-# Hulpfunctie voor databaseverbindingen
-def get_db_connection():
-    """Maakt een nieuwe databaseverbinding en retourneert deze."""
-    try:
-        conn = mysql.connector.connect(**db_config)
-        return conn
-    except mysql.connector.Error as err:
-        print(f"Fout bij verbinden met de database: {err}")
-        raise
 
 
 @app.route('/')
@@ -110,24 +129,22 @@ def ask84():
 @app.route('/clienten')
 @login_required
 def view_clienten():
-    """Bekijk de lijst van cliënten."""
     if session.get('role') not in ['admin', 'superadmin', 'therapist']:
         flash("Je hebt geen toegang tot deze pagina.", "danger")
         return redirect(url_for('home'))
 
+    # Open een database sessie
+    db_session = SessionLocal()  # Gebruik een andere naam dan 'session'
     try:
-        # Dynamisch een nieuwe verbinding maken
-        with get_db_connection() as conn:
-            with conn.cursor(dictionary=True) as cursor:
-                # Query om alle cliënten op te halen
-                cursor.execute("SELECT * FROM clients")
-                clienten = cursor.fetchall()
+        # Haal alle cliënten op
+        clients = db_session.query(Client).all()
     except Exception as e:
         flash(f"Er ging iets mis bij het ophalen van cliënten: {e}", "danger")
-        clienten = []
+        clients = []
+    finally:
+        db_session.close()
 
-    # Verwijs naar het juiste template
-    return render_template('clienten.html', title="Cliënten Overzicht", clients=clienten)
+    return render_template('clienten.html', title="Cliënten Overzicht", clients=clients)
 
 
 
@@ -137,25 +154,30 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-        try:
-            # Dynamisch een nieuwe verbinding maken
-            with get_db_connection() as conn:
-                with conn.cursor(dictionary=True) as cursor:
-                    cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
-                    user = cursor.fetchone()
 
-                    if user and password == user['password']:
-                        session['user_id'] = user['id']
-                        session['username'] = user['username']
-                        session['role'] = user['role']
-                        flash(f"Welkom, {user['username']}!", "success")
-                        return redirect(url_for('dashboards'))
-                    else:
-                        flash("Onjuist e-mailadres of wachtwoord.", "danger")
+        # Open een database sessie
+        db_session = SessionLocal()  # Gebruik een andere naam
+        try:
+            # Zoek de gebruiker in de database
+            user = db_session.query(User).filter(User.email == email).first()
+
+            if user and user.password == password:
+                # Stel sessievariabelen in
+                session['user_id'] = user.id  # Dit is Flask's session
+                session['username'] = user.username
+                session['role'] = user.role
+                flash(f"Welkom, {user.username}!", "success")
+                return redirect(url_for('dashboards'))
+            else:
+                flash("Onjuist e-mailadres of wachtwoord.", "danger")
         except Exception as e:
             flash(f"Er ging iets mis: {e}", "danger")
+        finally:
+            db_session.close()
 
-    return render_template('login.html', title="Login")
+    return render_template('login.html', title="Inloggen")
+
+
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -165,26 +187,30 @@ def register():
         password = request.form.get('password')
         role = 'client' if email != 'jaime@ohmymood.com' else 'superadmin'
 
+        # Open een database sessie
+        session = SessionLocal()
         try:
-            with get_db_connection() as conn:
-                with conn.cursor(dictionary=True) as cursor:
-                    cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
-                    existing_user = cursor.fetchone()
-                    if existing_user:
-                        flash("E-mailadres is al geregistreerd.", "danger")
-                        return redirect(url_for('register'))
+            # Controleer of de gebruiker al bestaat
+            existing_user = session.query(User).filter(User.email == email).first()
+            if existing_user:
+                flash("E-mailadres is al geregistreerd.", "danger")
+                return redirect(url_for('register'))
 
-                    cursor.execute(
-                        "INSERT INTO users (username, email, password, role) VALUES (%s, %s, %s, %s)",
-                        (email, email, password, role)
-                    )
-                    conn.commit()
-                    flash("Account succesvol aangemaakt! Je kunt nu inloggen.", "success")
-                    return redirect(url_for('login'))
+            # Voeg de gebruiker toe aan de database
+            new_user = User(username=email, email=email, password=password, role=role)
+            session.add(new_user)
+            session.commit()
+            flash("Account succesvol aangemaakt! Je kunt nu inloggen.", "success")
+            return redirect(url_for('login'))
         except Exception as e:
             flash(f"Er ging iets mis: {e}", "danger")
+        finally:
+            session.close()
 
+    # Zorg dat deze regels binnen de functie blijven!
+    print("Rendering template: register.html with title='Registreren'")
     return render_template('register.html', title="Registreren")
+
 
 
 
@@ -218,28 +244,32 @@ def role_management():
         flash("Je hebt geen toegang tot de Beheersmodule.", "danger")
         return redirect(url_for('dashboards'))
 
-    if request.method == 'POST':
-        user_id = request.form.get('user_id')
-        new_role = request.form.get('new_role')
-        try:
-            with get_db_connection() as conn:
-                with conn.cursor(dictionary=True) as cursor:
-                    cursor.execute("UPDATE users SET role = %s WHERE id = %s", (new_role, user_id))
-                    conn.commit()
-                    flash("Rol succesvol bijgewerkt!", "success")
-        except Exception as e:
-            flash(f"Fout bij het bijwerken van de rol: {e}", "danger")
-
+    # Open een database sessie
+    db_session = SessionLocal()  # Gebruik een unieke naam
     try:
-        with get_db_connection() as conn:
-            with conn.cursor(dictionary=True) as cursor:
-                cursor.execute("SELECT id, username, role FROM users")
-                users = cursor.fetchall()
+        if request.method == 'POST':
+            user_id = request.form.get('user_id')
+            new_role = request.form.get('new_role')
+
+            # Update de rol van de gebruiker
+            user = db_session.query(User).filter(User.id == user_id).first()
+            if user:
+                user.role = new_role
+                db_session.commit()
+                flash("Rol succesvol bijgewerkt!", "success")
+            else:
+                flash("Gebruiker niet gevonden.", "danger")
+
+        # Haal alle gebruikers op
+        users = db_session.query(User).all()
     except Exception as e:
-        flash(f"Fout bij het ophalen van gebruikers: {e}", "danger")
+        flash(f"Fout bij het beheren van rollen: {e}", "danger")
         users = []
+    finally:
+        db_session.close()
 
     return render_template('role_management.html', title="Beheersmodule", users=users)
+
 
 
 
