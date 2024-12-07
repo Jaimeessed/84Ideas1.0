@@ -17,7 +17,8 @@ DB_HOST = os.getenv("DB_HOST")
 DB_NAME = os.getenv("DB_NAME")
 
 # Maak de DATABASE_URL
-DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+DATABASE_URL = "mysql+pymysql://root:22!Graafsebaan@master-clock-443916-p6:europe-west4:eighty4ideas/84Ideas"
+
 
 # Debug: print de DATABASE_URL
 print("DEBUG - DATABASE_URL:", DATABASE_URL)
