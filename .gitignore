@@ -2,4 +2,7 @@
 .env
 # Ignore de secrets-map
 /secrets/
+# Ignore python cache files
+__pycache__/
+.pyc
 
