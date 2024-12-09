@@ -36,3 +36,9 @@ Create and activate a virtual environment:
 python -m venv venv
 source venv/bin/activate
 ```
+
+### Start docker compose environment
+
+```sh
+docker-compose -f docker-compose.local.yml up -d
+```
