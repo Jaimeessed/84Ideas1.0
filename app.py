@@ -8,6 +8,12 @@ from flask import Flask, flash, redirect, render_template, request, session, url
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
+from flask_login import LoginManager, current_user
+login_manager = LoginManager()
+
+
+
+
 # Laad de .env-variabelen
 load_dotenv()
 
@@ -25,6 +31,18 @@ print("DEBUG - DATABASE_URL:", DATABASE_URL)
 
 # Flask-app instellen
 app = Flask(__name__)
+login_manager.init_app(app)
+
+# Ensure current_user is available in templates
+@app.context_processor
+def inject_user():
+    return dict(current_user=current_user)
+
+# Define your user loader
+@login_manager.user_loader
+def load_user(user_id):
+    # Replace with your user loading logic
+    return User.get(user_id)
 
 # Configuratie van environment variables
 app.secret_key = os.getenv("SECRET_KEY")
@@ -121,6 +139,18 @@ def dashboards():
     """Dashboardpagina voor ingelogde gebruikers."""
     return render_template("dashboard.html", title="Dashboard")
 
+@app.route("/accounts")
+@login_required
+def accounts():
+    """Dashboardpagina voor ingelogde gebruikers."""
+    return render_template("accounts.html", title="Accounts")
+
+
+@app.route("/recordings")
+@login_required
+def recordings():
+    """Dashboardpagina voor ingelogde gebruikers."""
+    return render_template("recordings.html", title="Recordings")
 
 @app.route("/ask84", methods=["GET", "POST"])
 def ask84():
@@ -233,6 +263,10 @@ def contact():
     """Contactpagina, beschikbaar voor ingelogde en niet-ingelogde gebruikers."""
     return render_template("contact.html", title="Contact")
 
+@app.route("/my-whereby-room")
+def my_whereby_room():
+    """Contactpagina, beschikbaar voor ingelogde en niet-ingelogde gebruikers."""
+    return render_template("my-whereby-room.html", title="My Whereby Room")
 
 @app.route("/admin")
 @login_required
@@ -279,4 +313,4 @@ def role_management():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5000, host="0.0.0.0")

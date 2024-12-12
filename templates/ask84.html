@@ -1,19 +1,19 @@
-{% extends "base.html" %}
+{% extends "tailbase.html" %}
 
 {% block content %}
-<h1 class="my-4">Ask84</h1>
-<p>Stel je vraag hieronder en ontvang een antwoord:</p>
+<h1 class="my-4 text-2xl font-bold">Ask84</h1>
+<p class="mb-4">Stel je vraag hieronder en ontvang een antwoord:</p>
 <form method="post">
     <div class="mb-3">
-        <label for="question" class="form-label">Je vraag:</label>
-        <textarea id="question" name="question" class="form-control" rows="3" required></textarea>
+        <label for="question" class="block text-sm font-medium text-gray-700">Je vraag:</label>
+        <textarea id="question" name="question" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" rows="3" required></textarea>
     </div>
-    <button type="submit" class="btn btn-primary">Verstuur</button>
+    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Verstuur</button>
 </form>
 
 {% if response %}
-<div class="mt-4 alert alert-info">
-    <h5>Antwoord:</h5>
+<div class="mt-4 p-4 bg-blue-100 border border-blue-200 rounded-md">
+    <h5 class="text-lg font-semibold">Antwoord:</h5>
     <p>{{ response }}</p>
 </div>
 {% endif %}
