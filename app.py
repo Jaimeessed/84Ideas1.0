@@ -266,11 +266,47 @@ def contact():
     """Contactpagina, beschikbaar voor ingelogde en niet-ingelogde gebruikers."""
     return render_template("contact.html", title="Contact")
 
+@app.route("/chat")
+@login_required
+def chat():
+    """Contactpagina, beschikbaar voor ingelogde en niet-ingelogde gebruikers."""
+    return render_template("chat.html", title="chat")
+
+@app.route("/settings")
+@login_required
+def settings():
+    """Contactpagina, beschikbaar voor ingelogde en niet-ingelogde gebruikers."""
+    return render_template("settings.html", title="settings")
+
 @app.route("/my-whereby-room")
 @login_required
 def my_whereby_room():
     """Contactpagina, beschikbaar voor ingelogde en niet-ingelogde gebruikers."""
     return render_template("my-whereby-room.html", title="My Whereby Room")
+
+@app.route("/rooms")
+@login_required
+def rooms():
+    """Fetch and display all available rooms."""
+    api_key = os.getenv("WHEREBY_API_KEY")  # Ensure your API key is set in .env
+    headers = {
+        'Authorization': f'Bearer {api_key}',
+        'Content-Type': 'application/json'
+    }
+    
+    try:
+        response = requests.get('https://api.whereby.dev/v1/meetings', headers=headers)
+        if response.status_code == 200:
+            rooms_data = response.json().get('results', [])
+        else:
+            flash("Failed to fetch rooms.", "danger")
+            rooms_data = []
+    except Exception as e:
+        flash(f"An error occurred: {e}", "danger")
+        rooms_data = []
+
+    return render_template("rooms.html", title="Available Rooms", rooms=rooms_data)
+
 
 @app.route("/transcripts")
 @login_required
