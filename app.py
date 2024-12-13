@@ -1,6 +1,8 @@
 import os
 from datetime import datetime, timedelta
 from functools import wraps
+from flask_cors import CORS
+import requests
 
 import openai
 from dotenv import load_dotenv
@@ -32,6 +34,7 @@ print("DEBUG - DATABASE_URL:", DATABASE_URL)
 # Flask-app instellen
 app = Flask(__name__)
 login_manager.init_app(app)
+CORS(app)
 
 # Ensure current_user is available in templates
 @app.context_processor
@@ -264,9 +267,33 @@ def contact():
     return render_template("contact.html", title="Contact")
 
 @app.route("/my-whereby-room")
+@login_required
 def my_whereby_room():
     """Contactpagina, beschikbaar voor ingelogde en niet-ingelogde gebruikers."""
     return render_template("my-whereby-room.html", title="My Whereby Room")
+
+@app.route("/transcripts")
+@login_required
+def transcripts():
+    # Replace with your actual API key and room/session ID
+    api_key = os.getenv("WHEREBY_API_KEY")
+    room_id = "your_room_id"  # Replace with actual room ID or user ID
+    
+    # Fetch transcriptions
+    response = requests.get(
+        f'https://api.whereby.dev/v1/transcriptions?roomId={room_id}',
+        headers={
+            'Authorization': f'Bearer {api_key}'
+        }
+    )
+
+    if response.status_code == 200:
+        transcriptions = response.json().get('results', [])
+    else:
+        transcriptions = []
+        flash("Failed to fetch transcriptions.", "danger")
+
+    return render_template("transcripts.html", title="Transcripts", transcriptions=transcriptions)
 
 @app.route("/admin")
 @login_required
@@ -276,6 +303,8 @@ def admin_module():
         flash("Je hebt geen toegang tot de Admin Module.", "danger")
         return redirect(url_for("dashboards"))
     return render_template("admin.html", title="Admin Module")
+
+
 
 
 @app.route("/role-management", methods=["GET", "POST"])

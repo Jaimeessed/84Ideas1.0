@@ -1,9 +1,16 @@
 
 {% extends "tailbase.html" %}
 {% block content %}
+<script src="https://cdn.srv.whereby.com/embed/v2-embed.js" type="module"></script>
 <h1 class="h1 mx-auto text-2xl font-bold mb-2 w-fit text-gray-700">Let's Have a Call</h1>
 <p class="mx-auto w-fit text-gray-700">Hier kun je video-oproepen starten.</p>
-<div class="mx-auto w-fit text-gray-700 mt-4">
-    <iframe src="https://omm.whereby.com/jaime21eaf940-dbdb-4c31-a91b-e3a5ba64fb6b?roomKey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZWV0aW5nSWQiOiI5Mjg2NzI1NCIsInJvb21SZWZlcmVuY2UiOnsicm9vbU5hbWUiOiIvamFpbWUyMWVhZjk0MC1kYmRiLTRjMzEtYTkxYi1lM2E1YmE2NGZiNmIiLCJvcmdhbml6YXRpb25JZCI6IjI4NTAzNyJ9LCJpc3MiOiJodHRwczovL2FjY291bnRzLnNydi53aGVyZWJ5LmNvbSIsImlhdCI6MTczMDkxMTY0Niwicm9vbUtleVR5cGUiOiJtZWV0aW5nSG9zdCJ9.KTZQGj17EXj2ivfe47lxnE6CFoATGUwKhZXiyFQZH7U" allow="camera; microphone; fullscreen; speaker; display-capture; compute-pressure" style="height: 700px; width: 100%"></iframe>
+<div class="h-screen w-full">
+    <div class="relative w-full h-full">
+        <whereby-embed 
+        class="absolute inset-0 w-full h-full"
+        room="https://omm.whereby.com/jaime21eaf940-dbdb-4c31-a91b-e3a5ba64fb6b?roomKey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZWV0aW5nSWQiOiI5Mjg2NzI1NCIsInJvb21SZWZlcmVuY2UiOnsicm9vbU5hbWUiOiIvamFpbWUyMWVhZjk0MC1kYmRiLTRjMzEtYTkxYi1lM2E1YmE2NGZiNmIiLCJvcmdhbml6YXRpb25JZCI6IjI4NTAzNyJ9LCJpc3MiOiJodHRwczovL2FjY291bnRzLnNydi53aGVyZWJ5LmNvbSIsImlhdCI6MTczMDkxMTY0Niwicm9vbUtleVR5cGUiOiJtZWV0aW5nSG9zdCJ9.KTZQGj17EXj2ivfe47lxnE6CFoATGUwKhZXiyFQZH7U">
+
+        </whereby-embed>
+    </div>
 </div>
 {% endblock %}
